@@ -1,0 +1,32 @@
+name: Manual Deploy to Azure VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag version to deploy'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 102.37.222.22 >> ~/.ssh/known_hosts
+
+      - name: Connect to VM and deploy tag
+        run: |
+          TAG_NAME="${{ github.event.inputs.tag }}"
+
+          ssh -i ~/.ssh/id_rsa -o HostKeyAlgorithms=+ssh-rsa azureuser@102.37.222.22 << EOF
+            echo 'Connected to Azure VM'
+            touch text.txt
+
+          
+          EOF
